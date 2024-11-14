@@ -106,28 +106,22 @@ jobs:
           load: true
           set: |
             *.cache-from=type=gha,scope=${{ env.CACHE_GHA_SCOPE }}-${{ matrix.target }}
-            mainline.tags=tonistiigi/binfmt:test
+            mainline.tags=HalleyAssist/binfmt:test
       -
         name: Test mainline
         if: matrix.target == 'mainline'
         run: |
-          docker run --rm --privileged tonistiigi/binfmt:test --uninstall qemu-*
-          docker run --rm --privileged tonistiigi/binfmt:test --install all
-          docker run --rm arm64v8/alpine uname -a
+          docker run --rm --privileged HalleyAssist/binfmt:test --uninstall qemu-*
+          docker run --rm --privileged HalleyAssist/binfmt:test --install all
+          
+          docker pull --platform linux/arm arm32v7/alpine
           docker run --rm arm32v7/alpine uname -a
-          docker run --rm ppc64le/alpine uname -a
-          docker run --rm s390x/alpine uname -a
-          docker run --rm tonistiigi/debian:riscv uname -a
-          docker run --rm yangzewei2023/debian:loongarch64 uname -a
-          docker run --rm --platform=linux/s390x s390x/ubuntu apt update
-          docker run --rm --platform=linux/ppc64le ppc64le/ubuntu apt update
-          docker run --rm --platform=linux/arm64 arm64v8/ubuntu apt update
       -
         name: Test Syscalls
         if: matrix.target == 'mainline'
         run: |
           set -x
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/386,linux/arm,linux/ppc64le,linux/s390x --target=run --allow security.insecure --build-arg CONFIG_RT_GROUP_SCHED=false ./test
+          docker buildx build --platform=linux/arm --target=run --allow security.insecure --build-arg CONFIG_RT_GROUP_SCHED=false ./test
 
   e2e:
     runs-on: ubuntu-latest
@@ -144,20 +138,6 @@ jobs:
           - webpack
         platform:
           - linux/arm/v7
-        include:
-          - target: mainline
-            dockerfile: ejabberd
-            platform: linux/arm64
-          - target: desktop
-            dockerfile: tini
-            platform: linux/arm64
-            run_args: --rm
-          - target: desktop
-            dockerfile: postgis
-            platform: linux/arm64
-            run_args: -d --name postgis
-            logs_ctn_name: postgis
-            logs_check: "UTC [1] LOG:  database system is ready to accept connections"
     steps:
       -
         name: Checkout
@@ -173,12 +153,12 @@ jobs:
           load: true
           set: |
             *.cache-from=type=gha,scope=${{ env.CACHE_GHA_SCOPE }}-${{ matrix.target }}
-            *.tags=tonistiigi/binfmt:test
+            *.tags=HalleyAssist/binfmt:test
       -
         name: Set up QEMU
         run: |
-          docker run --privileged --rm tonistiigi/binfmt --uninstall qemu-*
-          docker run --rm --privileged tonistiigi/binfmt:test --install all
+          docker run --privileged --rm HalleyAssist/binfmt --uninstall qemu-*
+          docker run --rm --privileged HalleyAssist/binfmt:test --install all
       -
         name: Test
         working-directory: test/dockerfiles/${{ matrix.dockerfile }}

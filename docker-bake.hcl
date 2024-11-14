@@ -28,6 +28,7 @@ target "binaries" {
 
 target "all-arch" {
   platforms = [
+    "linux/amd64",
     "linux/arm/v7"
   ]
 }
